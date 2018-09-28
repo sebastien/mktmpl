@@ -16,9 +16,15 @@ given a template. Compared to simliar tools, *maketmpl* does not require
 to install any package or tool besides what you'd find a regular Unix
 development environment.
 
+Here are the main features:
+
+- Zero-requirement (besides a standard Unix development environment)
+- Language agnostic
+- Self-contained
+
 ## Quickstart
 
-### Creating a template
+### Creating and publishing a template
 
 Clone the `maketmpl` repository
 
@@ -27,12 +33,13 @@ $ git clone git@github.com:sebastien/maketmpl.git YOUR_NEW_TEMPLATE
 $ cd YOUR_NEW_TEMPLATE
 ```  
 
-Populate your template files and directories. Any file or directory containing
-uppercase letters surrounded by brackets, like `{VARIABLE}` will be automatically
-identified as **template variables**. Likewise, any file ending in `.mktmpl` will
-has occurences of `{VARIABLE}` replaced by the actual value of the variable
-as defined by the user of the template. The `.mktmpl` suffix will also be dropped
-when applying the template.
+You can now populate your template files and directories in `tmpl`. You can use
+template variables like `{VARIABLE}` in your file and directory names, or in the
+content of `.mktmpl` files.
+
+These *template variables* will be automatically detected and expanded to the
+value set in the `Makefile.conf` by the user. Files ending in `.mktmpl` will
+have their suffix dropped.
 
 ``` 
 $ mkdir tmpl
@@ -42,12 +49,13 @@ $ echo "# This is the main file for {PROJECT}" > 'tmpl/src/{LANG}/{PROJECT}/main
 $ vi README.md
 ```
 
+If you'd like to see the content of your template, run `make manifest`.
 At any point you can test your template by running `make apply`. This will
 ask you to edit a configuration file using `$EDITOR` (or `vi`) and will
 populate `.dist` with the applied `tmpl` files and directories.
 
 Once you're done, you simply need to add the `tmpl` files to the repository
-and publish it!
+and publish it. That's it!
 
 ### Using a template
 
@@ -60,24 +68,25 @@ $ cd YOUR_NEW_PROJECT
 $ make
 ```
 
-The first run of `make` will pop-up your `$EDITOR` and ask you to fill-in the
-main variables for the project. If everything worked fine, the original makefile
-will be removed and the templates will be expanded.
+The first run of `make` will pop-up your `$EDITOR` and ask you to fill in the
+main variables for the project.
 
-The original template files will be moved to the `.tmpl` directory within your project. If 
-you'd like to re-generate the project, simply `pushd .tmpl ; make revert ; popd` and
-then either `make config` to change configuration options or `make` to rebuild
-everything.
+If successful, the original template files will be moved to the `.tmpl`
+directory within your project. If you'd like to re-generate the project, run
+`pushd .tmpl ; make revert ; popd` and then either `make config` to change
+configuration options or `make` to rebuild everything using the same configuration.
 
 ## Makefile rules 
 
+The following rules are available up until the moment you `make cleanup`:
+
 - `make all` ― The default rule that does `make apply` followed by `make cleanup`
 
-- `make manifest`, `make mf` ― Lists the files that are part of the project template. 
+- `make manifest|mf` ― Lists the files that are part of the project template. 
 
-- `make variables`, `make vars` ― Lists the variables defined 
+- `make variables|vars` ― Lists the variables defined 
 
-- `make configure`, `make config` ― Creates the `Makefile.conf` (or `$TEMPLATE_CONF`) file and runs
+- `make configure|config` ― Creates the `Makefile.conf` (or `$TEMPLATE_CONF`) file and runs
   `$EDITOR` on it. Once the editor quits, the makefile will try to 
    apply the configuration to the templates.
 
@@ -99,6 +108,9 @@ everything.
 
 ## Makefile variables
 
+These are variables that you can override if you need to change some of the
+paths or extensions used by the main *maketmpl* makefile.
+
 - `TEMPLATE_OUTPUT`: The path where the template should be output. By default, this is
   the folder in which the template makefile is located.
 
@@ -113,18 +125,20 @@ everything.
 
 ## How does it work?
 
-Any file ending in `.mktmpl` will have matching `{VARNAME}` strings
-replaced with the defined value of `{VARNAME}`. Any file or directory which
-name contains `{VARNAME}` will also be expanded using the same rule.
+Template variables are defined as a `VARNAME:=VALUE` mapping in `Makefile.conf`, which
+is dynamically loaded when the *maketmpl* Makefile is run.
 
-```
-$ make
-< Make generates Makefile.conf based on all variables ecountered>
-< $EDITOR opens Makefile.conf >
-< apply:   Once all variables are set, project is expanded in .dist >
-< cleanup: mktmpl files are cleaned up and moved to .tmpl …>
-< … and .dist files are moved to the current directory >
-```
+Any file ending in `.mktmpl` will have matching `{VARNAME}` strings
+in its contents replaced with the coreresponding value in `Makefile.conf`.
+Any file or directory which path contains `{VARNAME}` will also be expanded using the same rule.
+
+Here's what happens when running `make` or `make all`:
+
+1) `make` generates `Makefile.conf` based on all variables ecountered>
+2) `$EDITOR` opens `Makefile.conf`
+3) **apply phase**:  if all variables are set, the templates are expanded in `.dist`
+4) **cleanup phase**: the *maketmpl* files are moved to `.tmpl` and the contents of `.dist` is moved 
+   in the current directory.
 
 ## Similar Projects
 
