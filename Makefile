@@ -16,25 +16,28 @@
 # variable in the names (like `{VARIABLE_NAME}.txt`) as well as 
 # variables defined in the content of any file ending in `.mktmpl`.
 
+# TODO: Test that tmpl exists, if not, fail.
+# TODO: Make sure all the configuration variables are defined on apply
+# TODO: Allow for `maketmpl.post.*` to be executed after applying
+
 EDITOR                 ?=vi
 
 # The file containing the definitions of the configuration variables. Should
 # not exist by default.
-TEMPLATE_CONF          :=Makefile.conf
+TEMPLATE_CONF          ?=Makefile.conf
 
 # The path where the templates are located
-TEMPLATE_EXT           :=.mktmpl
+TEMPLATE_EXT           ?=.mktmpl
 
 # The path where the template files are located
-TEMPLATE_PATH          :=tmpl
+TEMPLATE_PATH          ?=tmpl
 
 # The path where the current template files will be backed up
-TEMPLATE_BACKUP_PATH  :=.tmpl
+TEMPLATE_BACKUP_PATH   ?=.tmpl
 
 # The distribution directory where the files will be built/copied
-PRODUCT_PATH           :=.dist
+PRODUCT_PATH           ?=.dist
 
-# TODO: Test that tmpl exists, if not, fail.
 
 # -----------------------------------------------------------------------------
 # 
@@ -161,7 +164,7 @@ endif
 .PHONY: all apply config configuration mf manifest vars variables meta
 
 # This ensures that the template configuration exists and succee
-all: apply
+all: apply cleanup
 	
 # Outputs the list of files  that will be created by applying the template
 manifest:

@@ -36,6 +36,9 @@ move the `.tmpl` directory somwhere else.
 
 ## Makefile rules 
 
+### `make all`
+
+The default rule that does `make apply` followed by `make cleanup`
 
 ### `make manifest`, `make mf`
 
@@ -51,7 +54,29 @@ Creates the `Makefile.conf` (or `$TEMPLATE_CONF`) file and runs
 `$EDITOR` on it. Once the editor quits, the makefile will try to 
 apply the configuration to the templates.
 
+### `make apply`
+
+Applies the configuration to produce the templates in the
+`$PRODUCT_PATH?=.dist` directory. All the files in
+`tmpl` will be expanded using the configuration and written
+to `.dist`.
+
+### `make cleanup`
+
+Cleans up the *maketmpl* files and moves all the `.dist`
+files within the current directory. The *maketmpl* files
+are then backed up to `.tmpl`. You can revert everything
+by `cd .tmpl ; make revert`.
+
+### `make revert`
+
+Reverts a `make cleanup`, returning to the result
+of `make apply` in the parent directory.
+
 ### `make rules`
+
+Lists the generated makefile rules  that produce the applied
+template files. This is mostly useful for debugging.
 
 ## Makefile variables
 
