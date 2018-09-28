@@ -9,7 +9,7 @@
                                                           \ \_\        
 ```
 
-# `maketmpl` ― Makefile-based templates
+# *maketmpl* ― Makefile-based templates
 
 *Maketmpl* is a self-contained `Makefile` that generates project files
 given a template. Compared to simliar tools, *maketmpl* does not require
@@ -134,15 +134,23 @@ Any file or directory which path contains `{VARNAME}` will also be expanded usin
 
 Here's what happens when running `make` or `make all`:
 
-1) `make` generates `Makefile.conf` based on all variables ecountered>
-2) `$EDITOR` opens `Makefile.conf`
-3) **apply phase**:  if all variables are set, the templates are expanded in `.dist`
-4) **cleanup phase**: the *maketmpl* files are moved to `.tmpl` and the contents of `.dist` is moved 
+1) *configuration phase*: `make` generates `Makefile.conf` based on all variables ecountered, $EDITOR` opens `Makefile.conf`
+2) *apply phase*:  if all variables are set, the templates are expanded in `.dist`
+3) *cleanup phase*: the *maketmpl* files are moved to `.tmpl` and the contents of `.dist` is moved 
    in the current directory.
 
 ## Similar Projects
 
-[CookieCutter](https://github.com/audreyr/cookiecutter) is a Python tool that
-has similar goals. In comparison, `mktmpl` is self-contained and does not need to install an additional software on the system.
+There are a few similar projects:
 
-[Kickstart](https://github.com/Keats/kickstart) [introduction articl](https://dev.to/artemix/kickstart-a-fast-and-simple-project-bootstrapper-40k1)
+- [CookieCutter](https://github.com/audreyr/cookiecutter) is a Python tool that
+has similar goals and more features.
+
+- [Kickstart](https://github.com/Keats/kickstart), described [here](https://dev.to/artemix/kickstart-a-fast-and-simple-project-bootstrapper-40k1) 
+supports conditional templates and interactive configuration options.
+
+Compared to these *maketmpl* does not have the user-friendly interactive prompt to define
+conifguration variables (instead it edits the makefile configuration), nor does it have
+conditional templates (based on how you answered your questions). If you don't need these
+features and prefer a self-contained, simple alternative that integrates well with `make`,
+*maketmpl* might be the better option.
