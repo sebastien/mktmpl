@@ -36,69 +36,45 @@ move the `.tmpl` directory somwhere else.
 
 ## Makefile rules 
 
-### `make all`
+- `make all` ― The default rule that does `make apply` followed by `make cleanup`
 
-The default rule that does `make apply` followed by `make cleanup`
+- `make manifest`, `make mf` ― Lists the files that are part of the project template. 
 
-### `make manifest`, `make mf`
+- `make variables`, `make vars` ― Lists the variables defined 
 
-Lists the files that are part of the project template. 
+- `make configure`, `make config` ― Creates the `Makefile.conf` (or `$TEMPLATE_CONF`) file and runs
+  `$EDITOR` on it. Once the editor quits, the makefile will try to 
+   apply the configuration to the templates.
 
-### `make variables`, `make vars`
+- `make apply` ­― Applies the configuration to produce the templates in the
+  `$PRODUCT_PATH?=.dist` directory. All the files in
+  `tmpl` will be expanded using the configuration and written
+  to `.dist`.
 
-Lists the variables defined 
+- `make cleanup` ― Cleans up the *maketmpl* files and moves all the `.dist`
+  files within the current directory. The *maketmpl* files
+  are then backed up to `.tmpl`. You can revert everything
+  by `cd .tmpl ; make revert`.
 
-### `make configure`, `make config`
+- `make revert` ―  Reverts a `make cleanup`, returning to the result
+   of `make apply` in the parent directory.
 
-Creates the `Makefile.conf` (or `$TEMPLATE_CONF`) file and runs
-`$EDITOR` on it. Once the editor quits, the makefile will try to 
-apply the configuration to the templates.
-
-### `make apply`
-
-Applies the configuration to produce the templates in the
-`$PRODUCT_PATH?=.dist` directory. All the files in
-`tmpl` will be expanded using the configuration and written
-to `.dist`.
-
-### `make cleanup`
-
-Cleans up the *maketmpl* files and moves all the `.dist`
-files within the current directory. The *maketmpl* files
-are then backed up to `.tmpl`. You can revert everything
-by `cd .tmpl ; make revert`.
-
-### `make revert`
-
-Reverts a `make cleanup`, returning to the result
-of `make apply` in the parent directory.
-
-### `make rules`
-
-Lists the generated makefile rules  that produce the applied
-template files. This is mostly useful for debugging.
+- `make rules` ― Lists the generated makefile rules  that produce the applied
+   template files. This is mostly useful for debugging.
 
 ## Makefile variables
 
-### `TEMPLATE_OUTPUT`
+- `TEMPLATE_OUTPUT`: The path where the template should be output. By default, this is
+  the folder in which the template makefile is located.
 
-The path where the template should be output. By default, this is
-the folder in which the template makefile is located.
+- `TEMPLATE_CONF`: The name of the makefile template configuration file where the 
+  template variable's values is going to be stored.
 
-### `TEMPLATE_CONF`
+- `TEMPLATE_PATH`: The path where the template sources/files are located. By default,
+  it is `tmpl`
 
-The name of the makefile template configuration file where the 
-template variable's values is going to be stored.
-
-### `TEMPLATE_PATH`
-
-The path where the template sources/files are located. By default,
-it is `tmpl`
-
-### `TEMPLATE_BACKUP`
-
-The path where the original template directory will be moved once the
-tempate is applied (`.mktmpl` by default).
+- `TEMPLATE_BACKUP`: The path where the original template directory will be moved once the
+   template is applied (`.mktmpl` by default).
 
 ## How does it work?
 
@@ -110,7 +86,9 @@ name contains `{VARNAME}` will also be expanded using the same rule.
 $ make
 < Make generates Makefile.conf based on all variables ecountered>
 < $EDITOR opens Makefile.conf >
-< Once all variables are set, project is expanded >
+< apply:   Once all variables are set, project is expanded in .dist >
+< cleanup: mktmpl files are cleaned up and moved to .tmpl …>
+< … and .dist files are moved to the current directory >
 ```
 
 ## Similar Projects
