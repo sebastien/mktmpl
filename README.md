@@ -18,11 +18,45 @@ development environment.
 
 ## Quickstart
 
-A typical workflow is like this:
+### Creating a template
+
+Clone the `maketmpl` repository
 
 ```
-$ git clone REPOSITORY PROJECT
-$ cd PROJECT
+$ git clone git@github.com:sebastien/maketmpl.git YOUR_NEW_TEMPLATE
+$ cd YOUR_NEW_TEMPLATE
+```  
+
+Populate your template files and directories. Any file or directory containing
+uppercase letters surrounded by brackets, like `{VARIABLE}` will be automatically
+identified as **template variables**. Likewise, any file ending in `.mktmpl` will
+has occurences of `{VARIABLE}` replaced by the actual value of the variable
+as defined by the user of the template. The `.mktmpl` suffix will also be dropped
+when applying the template.
+
+``` 
+$ mkdir tmpl
+$ echo "# {PROJECT} Readme" > tmpl/README.mktmpl
+$ mkdir 'tmpl/src/{LANG}/{PROJECT}'
+$ echo "# This is the main file for {PROJECT}" > 'tmpl/src/{LANG}/{PROJECT}/main.{LANG}'
+$ vi README.md
+```
+
+At any point you can test your template by running `make apply`. This will
+ask you to edit a configuration file using `$EDITOR` (or `vi`) and will
+populate `.dist` with the applied `tmpl` files and directories.
+
+Once you're done, you simply need to add the `tmpl` files to the repository
+and publish it!
+
+### Using a template
+
+If you'd like to create a new project from a *maketmpl* template, you
+would simply need to do the following:
+
+```
+$ git clone YOUR_TEMPLATE_REPOSITORY YOUR_NEW_PROJECT
+$ cd YOUR_NEW_PROJECT
 $ make
 ```
 
@@ -31,8 +65,9 @@ main variables for the project. If everything worked fine, the original makefile
 will be removed and the templates will be expanded.
 
 The original template files will be moved to the `.tmpl` directory within your project. If 
-you'd like to re-generate the project, simply `cd .tmpl` and generate the project again or
-move the `.tmpl` directory somwhere else.
+you'd like to re-generate the project, simply `pushd .tmpl ; make revert ; popd` and
+then either `make config` to change configuration options or `make` to rebuild
+everything.
 
 ## Makefile rules 
 
