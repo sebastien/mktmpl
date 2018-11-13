@@ -149,6 +149,8 @@ has similar goals and more features.
 - [Kickstart](https://github.com/Keats/kickstart), described [here](https://dev.to/artemix/kickstart-a-fast-and-simple-project-bootstrapper-40k1) 
 supports conditional templates and interactive configuration options.
 
+- [Tinpig](https://github.com/bit101/tinpig), has a centralized template respository and an interactive CLI.
+
 Compared to these *maketmpl* does not have the user-friendly interactive prompt to define
 conifguration variables (instead it edits the makefile configuration), nor does it have
 conditional templates (based on how you answered your questions). If you don't need these

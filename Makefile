@@ -38,7 +38,6 @@ TEMPLATE_BACKUP_PATH   ?=.tmpl
 # The distribution directory where the files will be built/copied
 PRODUCT_PATH           ?=.dist
 
-
 # -----------------------------------------------------------------------------
 # 
 # TEMPLATE INTROSPECTION
@@ -46,15 +45,17 @@ PRODUCT_PATH           ?=.dist
 # -----------------------------------------------------------------------------
 
 # Contains all the FILES in the template path
-TEMPLATE_MANIFEST    :=$(shell find $(TEMPLATE_PATH) -name "*")
+TEMPLATE_MANIFEST    :=$(filter-out $(TEMPLATE_PATH)/mktmpl.%,$(shell find $(TEMPLATE_PATH) -name "*"))
 # The DIRECTORIES whose name have a TEMPLATE EXPRESSION
 TEMPLATE_TMPL_DIRS   :=$(shell find $(TEMPLATE_PATH) -regextype egrep -type d -regex '^(.*)?{[A-Z]+}(.*)$$' | sed 's|\./||g')
 # The FILES whose names have a TEMPLATE EXPRESSION
-TEMPLATE_TMPL_FILES  :=$(shell find $(TEMPLATE_PATH) -regextype egrep -type f -regex '^(.*)?{[A-Z]+}(.*)$$' | sed 's|\./||g')
+TEMPLATE_TMPL_FILES  :=$(filter-out $(TEMPLATE_PATH)/mktmpl.%,$(shell find $(TEMPLATE_PATH) -regextype egrep -type f -regex '^(.*)?{[A-Z]+}(.*)$$' | sed 's|\./||g'))
 # The files which CONTENT have TEMPLATE EXPRESSIONS
 TEMPLATE_TMPL_CONTENT:=$(shell find $(TEMPLATE_PATH) -name "*$(TEMPLATE_EXT)")
 # These are the files in the manifest that are not DIRS, FILES or CONTENT templates (ie. REGULAR files)
-TEMPLATE_TMPL_REGULAR:=$(shell echo $(TEMPLATE_MANIFEST) | xargs -n1 echo | grep -v -e ".*\$(TEMPLATE_EXT)" -e ".*{[A-z]\\+}.*")
+TEMPLATE_TMPL_REGULAR:=$(shell echo $(TEMPLATE_MANIFEST) | xargs -n1 echo | grep -v -e ".*\$(TEMPLATE_EXT)" -e ".*{[A-Z]\\+}.*")
+# NOTE: The maxdepth here is brittle, as it depends on
+TEMPLATE_SCRIPT      :=$(shell ls $(TEMPLATE_PATH)/ | grep  "mktmpl.post.sh")
 
 # Greps the TEMPLATE VARIABLE NAMES from the template dirs and file names
 TEMPLATE_VARS        :=$(strip $(shell echo $(TEMPLATE_TMPL_DIRS) $(TEMPLATE_TMPL_FILES) | egrep -o '\{([A-Z]+)\}' | tr -d '{}' | sort | uniq))
@@ -152,7 +153,7 @@ $(foreach file,$(TEMPLATE_TMPL_DIRS),$(call MAKE_TEMPLATE_DIR_RULE,$(file)))
 $(foreach file,$(TEMPLATE_TMPL_REGULAR),$(call MAKE_TEMPLATE_FILE_RULE,$(file)))
 endef
 else
-$(info --- Configuration not found, run `make config`)
+ERR_CONFIG_MISSING=1
 endif
 
 # -----------------------------------------------------------------------------
@@ -161,22 +162,45 @@ endif
 #
 # -----------------------------------------------------------------------------
 
-.PHONY: all apply config configuration mf manifest vars variables meta
+.PHONY: all apply help config configuration mf manifest vars variables meta
+
+help:
+	@echo "$(BOLD)MKTMPL$(RESET) ― Makefile-based template generation"
+	@echo "make $(BOLD)$(YELLOW)apply$(RESET)    ― applies the template in $(CYAN)$(TEMPLATE_PATH)$(RESET) to $(CYAN)$(PRODUCT_PATH)$(RESET)"
+	@echo "make $(BOLD)$(YELLOW)config$(RESET)   ― edits the configuration file $(CYAN)$(TEMPLATE_CONF)$(RESET)"
+	@echo "make $(BOLD)$(YELLOW)manifest$(RESET) ― lists all the files that will be created by $(YELLOW)apply$(RESET)"
 
 # This ensures that the template configuration exists and succee
 all: apply cleanup
 	
 # Outputs the list of files  that will be created by applying the template
 manifest:
-	@echo $(PRODUCT_ALL) | xargs -n1 echo | sed '$(TEMPLATE_SED)' | sort
+	@echo $(PRODUCT_TMPL_ALL) | xargs -n1 echo | sed '$(TEMPLATE_SED)' | sort
+	@if [ "$(ERR_CONFIG_MISSING)" == "1" ]; then echo "$(RED)$(BOLD)[!] $(RESET)$(RED)No configuration file found$(RESET), run $(YELLOW)make $(BOLD)config$(RESET) to create it"; fi
 
 manifest-raw:
-	@echo $(PRODUCT_ALL) | xargs -n1 echo | sort
+	@echo $(PRODUCT_TMPL_ALL) | xargs -n1 echo | sort
+
+# Ensures that the configuration file exists and is properly filled-in
+# TODO: We might want to check that all the variables are set
+configuration: $(TEMPLATE_CONF)
 
 # Applies the configuration and generates the template files
-apply:	configuration $(PRODUCT_ALL)
-	@echo "$(CYAN) ◆  Templates instanciated:$(RESET)"
-	@echo $(PRODUCT_ALL) | xargs -n1 echo "   " | sed '$(TEMPLATE_SED)' | sort
+apply: configuration $(PRODUCT_ALL)
+	@if [ -n "$(PRODUCT_ALL)" ]; then \
+		echo "$(CYAN) ◆  Templates instanciated:$(RESET)"; \
+		echo $(PRODUCT_ALL) | xargs -n1 echo "   " | sed '$(TEMPLATE_SED)' | sort; \
+	fi
+	@if [ -n "$(TEMPLATE_SCRIPT)" ]; then \
+		echo "$(CYAN) ◆  Running script: $(PRODUCT_PATH)/$(TEMPLATE_SCRIPT)$(RESET)"; \
+		cp -a "$(TEMPLATE_PATH)/$(TEMPLATE_SCRIPT)" "$(PRODUCT_PATH)/$(TEMPLATE_SCRIPT)"; \
+		sed -i '$(TEMPLATE_SED)' "$(PRODUCT_PATH)/$(TEMPLATE_SCRIPT)"; \
+		pushd "$(PRODUCT_PATH)" ; bash ./$(TEMPLATE_SCRIPT) ; popd; \
+	fi
+
+
+unapply:
+	@if [ -d "$(PRODUCT_PATH)" ]; then rm -rf "$(PRODUCT_PATH)"; fi
 
 cleanup:
 	@if [ ! -d "$(TEMPLATE_BACKUP_PATH)" ]; then mkdir $(TEMPLATE_BACKUP_PATH); fi
@@ -205,11 +229,6 @@ rules:
 	$(info $(SED_TEMPLATE))
 	$(info $(MAKE_TEMPLATE))
 
-# Ensures that the configuration file exists and is properly filled-in
-# TODO: We might want to check that all the variables are set
-configuration: $(TEMPLATE_CONF)
-	
-
 # -----------------------------------------------------------------------------
 # 
 # PRODUCTION RULES
@@ -217,7 +236,7 @@ configuration: $(TEMPLATE_CONF)
 # -----------------------------------------------------------------------------
 
 
-# This is the production rule that creates tthe template configuration file
+# This is the production rule that creates the template configuration file
 $(TEMPLATE_CONF):
 	@echo "$(GREEN) ◀  $(BOLD)$$@$(RESET) $(BLUE)[TEMPLATE CONF]$(RESET)"
 	@echo "# Fill the given variables to create the project" > $@
@@ -226,7 +245,7 @@ $(TEMPLATE_CONF):
 			echo $$VAR := >> $@; \
 		done
 	@$(EDITOR) $@
-	@make
+	@make apply
 
 # This is the production rule that expands a template into its target file.
 $(PRODUCT_PATH)/%: $(TEMPLATE_PATH)/%$(TEMPLATE_EXT)
