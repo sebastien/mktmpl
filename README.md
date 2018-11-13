@@ -141,15 +141,23 @@ Here's what happens when running `make` or `make all`:
 There are a few similar projects:
 
 - [CookieCutter](https://github.com/audreyr/cookiecutter) is a Python tool that
-has similar goals and more features.
+  has similar goals and more features, but act as a standalone tool as opposed to a self-contained script.
+  It is, in my opinion, the best of the software listed here, thanks to its simple configuration
+  and CLI.
 
 - [Kickstart](https://github.com/Keats/kickstart), described [here](https://dev.to/artemix/kickstart-a-fast-and-simple-project-bootstrapper-40k1) 
-supports conditional templates and interactive configuration options.
+  supports conditional templates and interactive configuration options, as well as relatively advanced way
+  to configure the interactive prompt that collects template configuration information.
 
 - [Tinpig](https://github.com/bit101/tinpig), has a centralized template respository and an interactive CLI.
+  It dependes on `node` to run.
 
-Compared to these *mktmpl* does not have the user-friendly interactive prompt to define
-conifguration variables (instead it edits the makefile configuration), nor does it have
-conditional templates (based on how you answered your questions). If you don't need these
-features and prefer a self-contained, simple alternative that integrates well with `make`,
-*mktmpl* might be the better option.
+- [Template](https://github.com/fabiospampinato/template) is similar to `tinpig` (with an arguably better name)
+  and also depends on `node`.
+
+You may prefer `mktmpl` to the above if you:
+
+- Don't want to install another tool (`mktmpl` is *self-contained*)
+- Trust that users can `$EDIT` the configuration variables themselves
+- Only need to support UNIXes
+
