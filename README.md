@@ -1,18 +1,15 @@
 ```
-                     __              __                       ___      
-                    /\ \            /\ \__                   /\_ \     
-   ___ ___      __  \ \ \/'\      __\ \ ,_\   ___ ___   _____\//\ \    
- /' __` __`\  /'__`\ \ \ , <    /'__`\ \ \/ /' __` __`\/\ '__`\\ \ \   
- /\ \/\ \/\ \/\ \L\.\_\ \ \\`\ /\  __/\ \ \_/\ \/\ \/\ \ \ \L\ \\_\ \_ 
- \ \_\ \_\ \_\ \__/.\_\\ \_\ \_\ \____\\ \__\ \_\ \_\ \_\ \ ,__//\____\
-  \/_/\/_/\/_/\/__/\/_/ \/_/\/_/\/____/ \/__/\/_/\/_/\/_/\ \ \/ \/____/
-                                                          \ \_\        
+         _   _             _ 
+   _____| |_| |_ _____ ___| |
+  |     | '_|  _|     | . | |
+  |_|_|_|_,_|_| |_|_|_|  _|_|
+                      |_|    
 ```
 
-# *maketmpl* ― Makefile-based templates
+# *mktmpl* ― Makefile-based templates
 
-*Maketmpl* is a self-contained `Makefile` that generates project files
-given a template. Compared to simliar tools, *maketmpl* does not require
+*mktmpl* is a self-contained `Makefile` that generates project files
+given a template. Compared to simliar tools, *mktmpl* does not require
 to install any package or tool besides what you'd find a regular Unix
 development environment.
 
@@ -26,10 +23,10 @@ Here are the main features:
 
 ### Creating and publishing a template
 
-Clone the `maketmpl` repository
+Clone the `mktmpl` repository
 
 ```
-$ git clone git@github.com:sebastien/maketmpl.git YOUR_NEW_TEMPLATE
+$ git clone git@github.com:sebastien/mktmpl.git YOUR_NEW_TEMPLATE
 $ cd YOUR_NEW_TEMPLATE
 ```  
 
@@ -59,7 +56,7 @@ and publish it. That's it!
 
 ### Using a template
 
-If you'd like to create a new project from a *maketmpl* template, you
+If you'd like to create a new project from a *mktmpl* template, you
 would simply need to do the following:
 
 ```
@@ -95,8 +92,8 @@ The following rules are available up until the moment you `make cleanup`:
   `tmpl` will be expanded using the configuration and written
   to `.dist`.
 
-- `make cleanup` ― Cleans up the *maketmpl* files and moves all the `.dist`
-  files within the current directory. The *maketmpl* files
+- `make cleanup` ― Cleans up the *mktmpl* files and moves all the `.dist`
+  files within the current directory. The *mktmpl* files
   are then backed up to `.tmpl`. You can revert everything
   by `cd .tmpl ; make revert`.
 
@@ -109,7 +106,7 @@ The following rules are available up until the moment you `make cleanup`:
 ## Makefile variables
 
 These are variables that you can override if you need to change some of the
-paths or extensions used by the main *maketmpl* makefile.
+paths or extensions used by the main *mktmpl* makefile.
 
 - `TEMPLATE_OUTPUT`: The path where the template should be output. By default, this is
   the folder in which the template makefile is located.
@@ -126,7 +123,7 @@ paths or extensions used by the main *maketmpl* makefile.
 ## How does it work?
 
 Template variables are defined as a `VARNAME:=VALUE` mapping in `Makefile.conf`, which
-is dynamically loaded when the *maketmpl* Makefile is run.
+is dynamically loaded when the *mktmpl* Makefile is run.
 
 Any file ending in `.mktmpl` will have matching `{VARNAME}` strings
 in its contents replaced with the coreresponding value in `Makefile.conf`.
@@ -136,7 +133,7 @@ Here's what happens when running `make` or `make all`:
 
 1) *configuration phase*: `make` generates `Makefile.conf` based on all variables ecountered, $EDITOR` opens `Makefile.conf`
 2) *apply phase*:  if all variables are set, the templates are expanded in `.dist`
-3) *cleanup phase*: the *maketmpl* files are moved to `.tmpl` and the contents of `.dist` is moved 
+3) *cleanup phase*: the *mktmpl* files are moved to `.tmpl` and the contents of `.dist` is moved 
    in the current directory.
 
 ## Similar Projects
@@ -151,8 +148,8 @@ supports conditional templates and interactive configuration options.
 
 - [Tinpig](https://github.com/bit101/tinpig), has a centralized template respository and an interactive CLI.
 
-Compared to these *maketmpl* does not have the user-friendly interactive prompt to define
+Compared to these *mktmpl* does not have the user-friendly interactive prompt to define
 conifguration variables (instead it edits the makefile configuration), nor does it have
 conditional templates (based on how you answered your questions). If you don't need these
 features and prefer a self-contained, simple alternative that integrates well with `make`,
-*maketmpl* might be the better option.
+*mktmpl* might be the better option.

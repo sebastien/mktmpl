@@ -1,13 +1,9 @@
 # -----------------------------------------------------------------------------
-# 
-#                     __              __                       ___      
-#                    /\ \            /\ \__                   /\_ \     
-#   ___ ___      __  \ \ \/'\      __\ \ ,_\   ___ ___   _____\//\ \    
-# /' __` __`\  /'__`\ \ \ , <    /'__`\ \ \/ /' __` __`\/\ '__`\\ \ \   
-# /\ \/\ \/\ \/\ \L\.\_\ \ \\`\ /\  __/\ \ \_/\ \/\ \/\ \ \ \L\ \\_\ \_ 
-# \ \_\ \_\ \_\ \__/.\_\\ \_\ \_\ \____\\ \__\ \_\ \_\ \_\ \ ,__//\____\
-#  \/_/\/_/\/_/\/__/\/_/ \/_/\/_/\/____/ \/__/\/_/\/_/\/_/\ \ \/ \/____/
-#                                                          \ \_\        
+#         _   _             _ 
+#   _____| |_| |_ _____ ___| |
+#  |     | '_|  _|     | . | |
+#  |_|_|_|_,_|_| |_|_|_|  _|_|
+#                      |_|    
 #
 # -----------------------------------------------------------------------------
 #
@@ -18,7 +14,6 @@
 
 # TODO: Test that tmpl exists, if not, fail.
 # TODO: Make sure all the configuration variables are defined on apply
-# TODO: Allow for `maketmpl.post.*` to be executed after applying
 
 EDITOR                 ?=vi
 
@@ -27,7 +22,7 @@ EDITOR                 ?=vi
 TEMPLATE_CONF          ?=Makefile.conf
 
 # The path where the templates are located
-TEMPLATE_EXT           ?=.mktmpl
+TEMPLATE_EXT           ?=.tmpl
 
 # The path where the template files are located
 TEMPLATE_PATH          ?=tmpl
@@ -35,8 +30,12 @@ TEMPLATE_PATH          ?=tmpl
 # The path where the current template files will be backed up
 TEMPLATE_BACKUP_PATH   ?=.tmpl
 
+# The template application post script
+TEMPLATE_POST          ?=mktmpl.post.sh
+
 # The distribution directory where the files will be built/copied
 PRODUCT_PATH           ?=.dist
+
 
 # -----------------------------------------------------------------------------
 # 
@@ -45,17 +44,17 @@ PRODUCT_PATH           ?=.dist
 # -----------------------------------------------------------------------------
 
 # Contains all the FILES in the template path
-TEMPLATE_MANIFEST    :=$(filter-out $(TEMPLATE_PATH)/mktmpl.%,$(shell find $(TEMPLATE_PATH) -name "*"))
+TEMPLATE_MANIFEST    :=$(filter-out $(TEMPLATE_PATH)/$(TEMPLATE_POST),$(shell find $(TEMPLATE_PATH) -name "*"))
 # The DIRECTORIES whose name have a TEMPLATE EXPRESSION
 TEMPLATE_TMPL_DIRS   :=$(shell find $(TEMPLATE_PATH) -regextype egrep -type d -regex '^(.*)?{[A-Z]+}(.*)$$' | sed 's|\./||g')
 # The FILES whose names have a TEMPLATE EXPRESSION
-TEMPLATE_TMPL_FILES  :=$(filter-out $(TEMPLATE_PATH)/mktmpl.%,$(shell find $(TEMPLATE_PATH) -regextype egrep -type f -regex '^(.*)?{[A-Z]+}(.*)$$' | sed 's|\./||g'))
+TEMPLATE_TMPL_FILES  :=$(filter-out $(TEMPLATE_PATH)/$(TEMPLATE_POST),$(shell find $(TEMPLATE_PATH) -regextype egrep -type f -regex '^(.*)?{[A-Z]+}(.*)$$' | sed 's|\./||g'))
 # The files which CONTENT have TEMPLATE EXPRESSIONS
 TEMPLATE_TMPL_CONTENT:=$(shell find $(TEMPLATE_PATH) -name "*$(TEMPLATE_EXT)")
 # These are the files in the manifest that are not DIRS, FILES or CONTENT templates (ie. REGULAR files)
 TEMPLATE_TMPL_REGULAR:=$(shell echo $(TEMPLATE_MANIFEST) | xargs -n1 echo | grep -v -e ".*\$(TEMPLATE_EXT)" -e ".*{[A-Z]\\+}.*")
 # NOTE: The maxdepth here is brittle, as it depends on
-TEMPLATE_SCRIPT      :=$(shell ls $(TEMPLATE_PATH)/ | grep  "mktmpl.post.sh")
+TEMPLATE_SCRIPT      :=$(shell ls $(TEMPLATE_PATH)/ | grep  "$(TEMPLATE_POST)")
 
 # Greps the TEMPLATE VARIABLE NAMES from the template dirs and file names
 TEMPLATE_VARS        :=$(strip $(shell echo $(TEMPLATE_TMPL_DIRS) $(TEMPLATE_TMPL_FILES) | egrep -o '\{([A-Z]+)\}' | tr -d '{}' | sort | uniq))
@@ -187,17 +186,23 @@ configuration: $(TEMPLATE_CONF)
 
 # Applies the configuration and generates the template files
 apply: configuration $(PRODUCT_ALL)
+	@echo "$(YELLOW)$(BOLD) "
+	@echo "          _   _             _ "
+	@echo "    _____| |_| |_ _____ ___| |"
+	@echo "   |     | '_|  _|     | . | |"
+	@echo "   |_|_|_|_,_|_| |_|_|_|  _|_|"
+	@echo "                    |_|"
+	@echo "$(RESET) "
 	@if [ -n "$(PRODUCT_ALL)" ]; then \
-		echo "$(CYAN) ◆  Templates instanciated:$(RESET)"; \
+		echo "$(CYAN) ◆  [apply] Applied templates:$(RESET)"; \
 		echo $(PRODUCT_ALL) | xargs -n1 echo "   " | sed '$(TEMPLATE_SED)' | sort; \
 	fi
 	@if [ -n "$(TEMPLATE_SCRIPT)" ]; then \
-		echo "$(CYAN) ◆  Running script: $(PRODUCT_PATH)/$(TEMPLATE_SCRIPT)$(RESET)"; \
+		echo "$(CYAN) ◆  [apply] Running post-apply script: $(PRODUCT_PATH)/$(TEMPLATE_SCRIPT)$(RESET)"; \
 		cp -a "$(TEMPLATE_PATH)/$(TEMPLATE_SCRIPT)" "$(PRODUCT_PATH)/$(TEMPLATE_SCRIPT)"; \
 		sed -i '$(TEMPLATE_SED)' "$(PRODUCT_PATH)/$(TEMPLATE_SCRIPT)"; \
-		pushd "$(PRODUCT_PATH)" ; bash ./$(TEMPLATE_SCRIPT) ; popd; \
+		pushd "$(PRODUCT_PATH)" ; bash ./$(TEMPLATE_SCRIPT) ; unlink ./$(TEMPLATE_SCRIPT); popd; \
 	fi
-
 
 unapply:
 	@if [ -d "$(PRODUCT_PATH)" ]; then rm -rf "$(PRODUCT_PATH)"; fi
