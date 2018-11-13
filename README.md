@@ -32,15 +32,15 @@ $ cd YOUR_NEW_TEMPLATE
 
 You can now populate your template files and directories in `tmpl`. You can use
 template variables like `{VARIABLE}` in your file and directory names, or in the
-content of `.mktmpl` files.
+content of `.tmpl` files.
 
 These *template variables* will be automatically detected and expanded to the
-value set in the `Makefile.conf` by the user. Files ending in `.mktmpl` will
+value set in the `Makefile.conf` by the user. Files ending in `.tmpl` will
 have their suffix dropped.
 
 ``` 
 $ mkdir tmpl
-$ echo "# {PROJECT} Readme" > tmpl/README.mktmpl
+$ echo "# {PROJECT} Readme" > tmpl/README.tmpl
 $ mkdir 'tmpl/src/{LANG}/{PROJECT}'
 $ echo "# This is the main file for {PROJECT}" > 'tmpl/src/{LANG}/{PROJECT}/main.{LANG}'
 $ vi README.md
@@ -118,14 +118,14 @@ paths or extensions used by the main *mktmpl* makefile.
   it is `tmpl`
 
 - `TEMPLATE_BACKUP`: The path where the original template directory will be moved once the
-   template is applied (`.mktmpl` by default).
+   template is applied (`.tmpl` by default).
 
 ## How does it work?
 
 Template variables are defined as a `VARNAME:=VALUE` mapping in `Makefile.conf`, which
 is dynamically loaded when the *mktmpl* Makefile is run.
 
-Any file ending in `.mktmpl` will have matching `{VARNAME}` strings
+Any file ending in `.tmpl` will have matching `{VARNAME}` strings
 in its contents replaced with the coreresponding value in `Makefile.conf`.
 Any file or directory which path contains `{VARNAME}` will also be expanded using the same rule.
 
