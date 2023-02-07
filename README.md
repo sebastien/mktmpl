@@ -14,14 +14,18 @@
 
 *mktmpl* is a self-contained `Makefile` that generates project files
 given a template. Compared to simliar tools, *mktmpl* does not require
-to install any package or tool besides what you'd find a regular Unix
+to install any package or tool besides what you'd find in a regular Unix
 development environment.
 
-Here are the main features:
+`mktmpl` main features are:
 
 - Zero-requirement (besides a standard Unix development environment)
 - Language agnostic
 - Self-contained
+
+Users of a template typically simply have to `git clone` the repository and
+type `make`, at which point they are invited to configure the template
+before it self-destructs and gets replaced by the expanded template.
 
 ## Quickstart
 
